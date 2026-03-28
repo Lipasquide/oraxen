@@ -1,3 +1,5 @@
+// oraxen-master/core/src/main/java/io/th0rgal/oraxen/mechanics/provided/gameplay/shaped/ShapedBlockMechanic.java
+
 package io.th0rgal.oraxen.mechanics.provided.gameplay.shaped;
 
 import io.th0rgal.oraxen.OraxenPlugin;
@@ -17,8 +19,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
- * Mechanic for custom shaped block variants (stairs, slabs, doors, trapdoors, grates).
- * Uses waxed copper blocks as the base to prevent oxidation while allowing custom models.
+ * Mechanic for custom shaped block variants (stairs, slabs, doors, fence, walls, buttons, etc.).
+ * Uses standard vanilla materials as the base.
  */
 public class ShapedBlockMechanic extends Mechanic {
 
@@ -44,16 +46,15 @@ public class ShapedBlockMechanic extends Mechanic {
             this.blockType = ShapedBlockType.valueOf(typeStr);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid shaped block type: " + typeStr +
-                ". Valid types: STAIR, SLAB, DOOR, TRAPDOOR, GRATE");
+                ". Valid types: " + String.join(", ", ShapedBlockType.values()));
         }
-
-        // Parse custom variation (1-4)
+        // Parse custom variation (1-n, depending on array length)
         this.customVariation = section.getInt("custom_variation", 1);
-        if (customVariation < 1 || customVariation > 4) {
-            throw new IllegalArgumentException("custom_variation must be between 1 and 4 for shaped blocks");
+        if (customVariation < 1 || customVariation > blockType.getMaterials().length) {
+            throw new IllegalArgumentException("custom_variation must be between 1 and " + blockType.getMaterials().length + " for " + blockType);
         }
 
-        // Get the actual material to place
+        // Get the actual material to place (defined by user in config)
         this.placedMaterial = blockType.getMaterial(customVariation);
 
         // Parse model
@@ -96,7 +97,6 @@ public class ShapedBlockMechanic extends Mechanic {
         ConfigurationSection blockSoundsSection = section.getConfigurationSection("block_sounds");
         this.blockSounds = blockSoundsSection != null ? new BlockSounds(blockSoundsSection) : null;
     }
-
     public ShapedBlockType getBlockType() {
         return blockType;
     }
@@ -145,7 +145,6 @@ public class ShapedBlockMechanic extends Mechanic {
     public LimitedPlacing getLimitedPlacing() {
         return limitedPlacing;
     }
-
     public boolean hasBlockSounds() {
         return blockSounds != null;
     }
